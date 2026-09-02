@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "903376812082",
+    "project_id": "ai-gd-analyzer",
+    "storage_bucket": "ai-gd-analyzer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903376812082:android:8f8fb348558becea85e42b",
+        "android_client_info": {
+          "package_name": "com.example.gdanalyzer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC88xb3mVkBCBGsGDY1JV5oISvvKf3d0F8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

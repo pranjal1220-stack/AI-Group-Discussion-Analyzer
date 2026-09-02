@@ -9,12 +9,16 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class MainActivity extends AppCompatActivity {
 
     private EditText etEmail;
     private EditText etPassword;
     private TextView btnLogin;
     private TextView tvRegister;
+
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         tvRegister = findViewById(R.id.tvRegister);
+
+        firebaseAuth = FirebaseAuth.getInstance();
 
         btnLogin.setOnClickListener(v -> validateLogin());
 
@@ -63,10 +69,48 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(
-                MainActivity.this,
-                "Login details are valid!",
-                Toast.LENGTH_SHORT
-        ).show();
+        loginWithFirebase(email, password);
+    }
+
+    private void loginWithFirebase(String email, String password) {
+
+        btnLogin.setEnabled(false);
+
+        firebaseAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+
+                    btnLogin.setEnabled(true);
+
+                    if (task.isSuccessful()) {
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Login successful!",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        Intent intent = new Intent(
+                                MainActivity.this,
+                                DashboardActivity.class
+                        );
+
+                        startActivity(intent);
+                        finish();
+
+                    } else {
+
+                        String errorMessage = "Login failed. Please check your details.";
+
+                        if (task.getException() != null) {
+                            errorMessage = task.getException().getMessage();
+                        }
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                errorMessage,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                });
     }
 }

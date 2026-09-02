@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F5FC"
+    android:fillViewport="true"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI GD ANALYZER"
+                    android:textColor="#6A4FB3"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12" />
+
+                <TextView
+                    android:id="@+id/tvWelcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Welcome back! 👋"
+                    android:textColor="#24202D"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- Profile circle -->
+            <TextView
+                android:id="@+id/btnProfile"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/rounded_button"
+                android:gravity="center"
+                android:text="👤"
+                android:textSize="22sp" />
+
+        </LinearLayout>
+
+        <!-- AI Introduction Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="22dp"
+            android:background="@drawable/rounded_button">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎯  Ready to improve?"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Practice your group discussion skills and get personalized AI feedback."
+                android:textColor="#EDE7F8"
+                android:textSize="14sp"
+                android:lineSpacingExtra="3dp" />
+
+            <TextView
+                android:id="@+id/btnStartGD"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="18dp"
+                android:background="#FFFFFF"
+                android:gravity="center"
+                android:text="🎤  Start New Discussion"
+                android:textColor="#6A4FB3"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/btnJoinGD"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:background="#EEE9F8"
+                android:gravity="center"
+                android:text="🔑  Join Existing Discussion"
+                android:textColor="#6A4FB3"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Section Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="Your Activity"
+            android:textColor="#24202D"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
+        <!-- Stats Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="105dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:padding="16dp"
+                android:orientation="vertical"
+                android:gravity="center_vertical"
+                android:background="#FFFFFF">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📊"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="0"
+                    android:textColor="#24202D"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Discussions"
+                    android:textColor="#77727F"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="105dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:padding="16dp"
+                android:orientation="vertical"
+                android:gravity="center_vertical"
+                android:background="#FFFFFF">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⭐"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="--"
+                    android:textColor="#24202D"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Average Score"
+                    android:textColor="#77727F"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Previous Analysis -->
+        <TextView
+            android:id="@+id/btnPreviousResults"
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:layout_marginTop="18dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:gravity="center_vertical"
+            android:text="📈   Previous Analysis"
+            android:textColor="#24202D"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="#FFFFFF" />
+
+        <!-- Quick Tips -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:padding="18dp"
+            android:orientation="vertical"
+            android:background="#EEE9F8">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💡 Quick Tip"
+                android:textColor="#6A4FB3"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Speak clearly, listen actively, and support your points with relevant examples."
+                android:textColor="#55505F"
+                android:textSize="13sp"
+                android:lineSpacingExtra="2dp" />
+
+        </LinearLayout>
+
+        <!-- Logout -->
+        <TextView
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="18dp"
+            android:gravity="center"
+            android:text="Logout"
+            android:textColor="#D32F2F"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>

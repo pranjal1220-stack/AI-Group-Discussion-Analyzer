@@ -9,6 +9,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText etName;
@@ -17,6 +19,8 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText etConfirmPassword;
     private TextView btnRegister;
     private TextView tvLogin;
+
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +33,8 @@ public class RegisterActivity extends AppCompatActivity {
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnRegister = findViewById(R.id.btnRegister);
         tvLogin = findViewById(R.id.tvLogin);
+
+        firebaseAuth = FirebaseAuth.getInstance();
 
         btnRegister.setOnClickListener(v -> validateRegistration());
 
@@ -88,10 +94,48 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(
-                RegisterActivity.this,
-                "Registration details are valid!",
-                Toast.LENGTH_SHORT
-        ).show();
+        createFirebaseAccount(email, password);
+    }
+
+    private void createFirebaseAccount(String email, String password) {
+
+        btnRegister.setEnabled(false);
+
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+
+                    btnRegister.setEnabled(true);
+
+                    if (task.isSuccessful()) {
+
+                        Toast.makeText(
+                                RegisterActivity.this,
+                                "Account created successfully!",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        Intent intent = new Intent(
+                                RegisterActivity.this,
+                                MainActivity.class
+                        );
+
+                        startActivity(intent);
+                        finish();
+
+                    } else {
+
+                        String errorMessage = "Registration failed. Please try again.";
+
+                        if (task.getException() != null) {
+                            errorMessage = task.getException().getMessage();
+                        }
+
+                        Toast.makeText(
+                                RegisterActivity.this,
+                                errorMessage,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                });
     }
 }
