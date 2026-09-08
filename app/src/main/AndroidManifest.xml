@@ -24,11 +24,35 @@
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="gdanalyzer"
+                    android:host="join" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="ai-gd-analyzer.web.app"
+                    android:pathPrefix="/join" />
+            </intent-filter>
+
         </activity>
         <activity
             android:name=".CreateGDActivity"
@@ -40,6 +64,10 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".WaitingRoomActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".HostWaitingRoomActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
     </application>

@@ -1,5 +1,6 @@
 package com.example.gdanalyzer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -92,11 +93,10 @@ public class CreateGDActivity extends AppCompatActivity {
 
                     String sessionId = documentReference.getId();
 
-                    Toast.makeText(
-                            CreateGDActivity.this,
-                            "Discussion created successfully!\nSession ID: " + sessionId,
-                            Toast.LENGTH_LONG
-                    ).show();
+                    Intent intent = new Intent(CreateGDActivity.this, HostWaitingRoomActivity.class);
+                    intent.putExtra("sessionId", sessionId);
+                    startActivity(intent);
+                    finish();
 
                 })
                 .addOnFailureListener(e -> {

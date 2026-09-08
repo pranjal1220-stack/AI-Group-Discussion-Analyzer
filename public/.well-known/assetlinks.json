@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.gdanalyzer",
+      "sha256_cert_fingerprints": [
+        "6A:43:3A:B0:67:D6:DA:19:78:E0:AF:FE:E1:16:0D:6F:8A:80:F0:E8:30:DC:81:82:E7:B0:E6:B3:66:0D:02:27"
+      ]
+    }
+  }
+]

@@ -54,55 +54,132 @@ public class JoinGDActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
 
-                    if (documentSnapshot.exists()) {
-
-                        String participantId = com.google.firebase.auth.FirebaseAuth
-                                .getInstance()
-                                .getCurrentUser()
-                                .getUid();
-
-                        java.util.Map<String, Object> participant = new java.util.HashMap<>();
-                        participant.put("name", participantName);
-                        participant.put("userId", participantId);
-
-                        db.collection("discussions")
-                                .document(sessionId)
-                                .collection("participants")
-                                .document(participantId)
-                                .set(participant)
-                                .addOnSuccessListener(aVoid -> {
-
-                                    Toast.makeText(
-                                            JoinGDActivity.this,
-                                            "Joined discussion successfully!",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-
-                                    Intent intent = new Intent(JoinGDActivity.this, WaitingRoomActivity.class);
-                                    intent.putExtra("sessionId", sessionId);
-                                    intent.putExtra("participantName", participantName);
-                                    startActivity(intent);
-                                    finish();
-
-                                })
-                                .addOnFailureListener(e -> {
-
-                                    Toast.makeText(
-                                            JoinGDActivity.this,
-                                            "Failed to join: " + e.getMessage(),
-                                            Toast.LENGTH_LONG
-                                    ).show();
-
-                                });
-
-                    }else {
+                    if (!documentSnapshot.exists()) {
 
                         Toast.makeText(
                                 JoinGDActivity.this,
                                 "Invalid Session ID",
                                 Toast.LENGTH_LONG
                         ).show();
+
+                        return;
                     }
+
+                    // Get maximum number of participants
+                    Long participantLimit =
+                            documentSnapshot.getLong("participants");
+
+                    if (participantLimit == null) {
+
+                        Toast.makeText(
+                                JoinGDActivity.this,
+                                "Participant limit not found",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    String participantId = com.google.firebase.auth.FirebaseAuth
+                            .getInstance()
+                            .getCurrentUser()
+                            .getUid();
+
+                    // Check whether this participant has already joined
+                    db.collection("discussions")
+                            .document(sessionId)
+                            .collection("participants")
+                            .document(participantId)
+                            .get()
+                            .addOnSuccessListener(existingParticipant -> {
+
+                                if (existingParticipant.exists()) {
+
+                                    // Already joined - allow them to continue
+                                    openWaitingRoom(sessionId, participantName);
+
+                                    return;
+                                }
+
+                                // Count current participants
+                                db.collection("discussions")
+                                        .document(sessionId)
+                                        .collection("participants")
+                                        .get()
+                                        .addOnSuccessListener(participantSnapshot -> {
+
+                                            int currentParticipants =
+                                                    participantSnapshot.size();
+
+                                            if (currentParticipants >= participantLimit) {
+
+                                                Toast.makeText(
+                                                        JoinGDActivity.this,
+                                                        "Meeting is full. Maximum "
+                                                                + participantLimit
+                                                                + " participants are allowed.",
+                                                        Toast.LENGTH_LONG
+                                                ).show();
+
+                                                return;
+                                            }
+
+                                            // Add new participant
+                                            java.util.Map<String, Object> participant =
+                                                    new java.util.HashMap<>();
+
+                                            participant.put("name", participantName);
+                                            participant.put("userId", participantId);
+
+                                            db.collection("discussions")
+                                                    .document(sessionId)
+                                                    .collection("participants")
+                                                    .document(participantId)
+                                                    .set(participant)
+                                                    .addOnSuccessListener(aVoid -> {
+
+                                                        Toast.makeText(
+                                                                JoinGDActivity.this,
+                                                                "Joined discussion successfully!",
+                                                                Toast.LENGTH_SHORT
+                                                        ).show();
+
+                                                        openWaitingRoom(
+                                                                sessionId,
+                                                                participantName
+                                                        );
+                                                    })
+                                                    .addOnFailureListener(e -> {
+
+                                                        Toast.makeText(
+                                                                JoinGDActivity.this,
+                                                                "Failed to join: "
+                                                                        + e.getMessage(),
+                                                                Toast.LENGTH_LONG
+                                                        ).show();
+                                                    });
+
+                                        })
+                                        .addOnFailureListener(e -> {
+
+                                            Toast.makeText(
+                                                    JoinGDActivity.this,
+                                                    "Unable to check participants: "
+                                                            + e.getMessage(),
+                                                    Toast.LENGTH_LONG
+                                            ).show();
+                                        });
+
+                            })
+                            .addOnFailureListener(e -> {
+
+                                Toast.makeText(
+                                        JoinGDActivity.this,
+                                        "Unable to check participant: "
+                                                + e.getMessage(),
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            });
 
                 })
                 .addOnFailureListener(e -> {
@@ -112,7 +189,19 @@ public class JoinGDActivity extends AppCompatActivity {
                             "Error: " + e.getMessage(),
                             Toast.LENGTH_LONG
                     ).show();
-
                 });
+    }
+    private void openWaitingRoom(String sessionId, String participantName) {
+
+        Intent intent = new Intent(
+                JoinGDActivity.this,
+                WaitingRoomActivity.class
+        );
+
+        intent.putExtra("sessionId", sessionId);
+        intent.putExtra("participantName", participantName);
+
+        startActivity(intent);
+        finish();
     }
 }

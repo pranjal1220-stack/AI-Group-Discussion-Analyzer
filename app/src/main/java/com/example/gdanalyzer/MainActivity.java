@@ -10,6 +10,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,11 +23,25 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvRegister;
 
     private FirebaseAuth firebaseAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent incomingIntent = getIntent();
+
+        if (Intent.ACTION_VIEW.equals(incomingIntent.getAction())
+                && incomingIntent.getData() != null) {
+
+            String sessionId =
+                    incomingIntent.getData().getLastPathSegment();
+
+            if (sessionId != null && !sessionId.isEmpty()) {
+                incomingIntent.putExtra("sessionId", sessionId);
+            }
+        }
 
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
@@ -31,12 +49,23 @@ public class MainActivity extends AppCompatActivity {
         tvRegister = findViewById(R.id.tvRegister);
 
         firebaseAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
-        btnLogin.setOnClickListener(v -> validateLogin());
+        btnLogin.setOnClickListener(v -> {
+            Toast.makeText(
+                    MainActivity.this,
+                    "Login button clicked",
+                    Toast.LENGTH_SHORT
+            ).show();
 
+            validateLogin();
+        });
         tvRegister.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
-            startActivity(intent);
+            Intent registerIntent = new Intent(
+                    MainActivity.this,
+                    RegisterActivity.class
+            );
+            startActivity(registerIntent);
         });
     }
 
@@ -85,24 +114,42 @@ public class MainActivity extends AppCompatActivity {
 
                         Toast.makeText(
                                 MainActivity.this,
+                                "Firebase login successful",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        Toast.makeText(
+                                MainActivity.this,
                                 "Login successful!",
                                 Toast.LENGTH_SHORT
                         ).show();
 
-                        Intent intent = new Intent(
-                                MainActivity.this,
-                                DashboardActivity.class
-                        );
+                        String sessionId =
+                                getIntent().getStringExtra("sessionId");
 
-                        startActivity(intent);
-                        finish();
+                        if (sessionId != null && !sessionId.isEmpty()) {
+
+                            joinDiscussionFromLink(sessionId);
+
+                        } else {
+
+                            Intent hostIntent = new Intent(
+                                    MainActivity.this,
+                                    DashboardActivity.class
+                            );
+
+                            startActivity(hostIntent);
+                            finish();
+                        }
 
                     } else {
 
-                        String errorMessage = "Login failed. Please check your details.";
+                        String errorMessage =
+                                "Login failed. Please check your details.";
 
                         if (task.getException() != null) {
-                            errorMessage = task.getException().getMessage();
+                            errorMessage =
+                                    task.getException().getMessage();
                         }
 
                         Toast.makeText(
@@ -112,5 +159,178 @@ public class MainActivity extends AppCompatActivity {
                         ).show();
                     }
                 });
+    }
+
+    private void joinDiscussionFromLink(String sessionId) {
+
+        if (firebaseAuth.getCurrentUser() == null) {
+            Toast.makeText(
+                    MainActivity.this,
+                    "User login information not found.",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        String userId =
+                firebaseAuth.getCurrentUser().getUid();
+
+        String email =
+                firebaseAuth.getCurrentUser().getEmail();
+
+        db.collection("discussions")
+                .document(sessionId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+
+                    if (!documentSnapshot.exists()) {
+
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Discussion not found.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        return;
+                    }
+
+                    Long limitValue =
+                            documentSnapshot.getLong("participants");
+
+                    final long participantLimit =
+                            limitValue != null ? limitValue : 10L;
+
+                    db.collection("discussions")
+                            .document(sessionId)
+                            .collection("participants")
+                            .document(userId)
+                            .get()
+                            .addOnSuccessListener(participantDocument -> {
+
+                                // User has already joined
+                                if (participantDocument.exists()) {
+
+                                    openParticipantWaitingRoom(sessionId);
+                                    return;
+                                }
+
+                                db.collection("discussions")
+                                        .document(sessionId)
+                                        .collection("participants")
+                                        .get()
+                                        .addOnSuccessListener(participantSnapshot -> {
+
+                                            int currentCount =
+                                                    participantSnapshot.size();
+
+                                            if (currentCount >= participantLimit) {
+
+                                                Toast.makeText(
+                                                        MainActivity.this,
+                                                        "Meeting is full. Maximum "
+                                                                + participantLimit
+                                                                + " participants are allowed.",
+                                                        Toast.LENGTH_LONG
+                                                ).show();
+
+                                                return;
+                                            }
+
+                                            Map<String, Object> participant =
+                                                    new HashMap<>();
+
+                                            participant.put(
+                                                    "userId",
+                                                    userId
+                                            );
+
+                                            participant.put(
+                                                    "name",
+                                                    email != null
+                                                            ? email
+                                                            : "Participant"
+                                            );
+
+                                            participant.put(
+                                                    "joinedAt",
+                                                    com.google.firebase.firestore.FieldValue
+                                                            .serverTimestamp()
+                                            );
+
+                                            db.collection("discussions")
+                                                    .document(sessionId)
+                                                    .collection("participants")
+                                                    .document(userId)
+                                                    .set(participant)
+                                                    .addOnSuccessListener(aVoid -> {
+
+                                                        openParticipantWaitingRoom(
+                                                                sessionId
+                                                        );
+
+                                                    })
+                                                    .addOnFailureListener(e -> {
+
+                                                        Toast.makeText(
+                                                                MainActivity.this,
+                                                                "Failed to join discussion: "
+                                                                        + e.getMessage(),
+                                                                Toast.LENGTH_LONG
+                                                        ).show();
+
+                                                    });
+
+                                        })
+                                        .addOnFailureListener(e -> {
+
+                                            Toast.makeText(
+                                                    MainActivity.this,
+                                                    "Failed to check participants: "
+                                                            + e.getMessage(),
+                                                    Toast.LENGTH_LONG
+                                            ).show();
+
+                                        });
+
+                            })
+                            .addOnFailureListener(e -> {
+
+                                Toast.makeText(
+                                        MainActivity.this,
+                                        "Failed to check participant: "
+                                                + e.getMessage(),
+                                        Toast.LENGTH_LONG
+                                ).show();
+
+                            });
+
+                })
+                .addOnFailureListener(e -> {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Failed to load discussion: "
+                                    + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                });
+    }
+
+    private void openParticipantWaitingRoom(String sessionId) {
+
+        Intent participantIntent = new Intent(
+                MainActivity.this,
+                WaitingRoomActivity.class
+        );
+
+        participantIntent.putExtra(
+                "sessionId",
+                sessionId
+        );
+
+        startActivity(participantIntent);
+
+        finish();
     }
 }

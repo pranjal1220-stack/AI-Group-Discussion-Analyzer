@@ -4,64 +4,41 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
-public class WaitingRoomActivity extends AppCompatActivity {
+public class HostWaitingRoomActivity extends AppCompatActivity {
 
     private TextView tvSessionId;
     private TextView tvTopic;
     private TextView tvParticipants;
-    private TextView tvWaitingMessage;
-    private TextView btnLeave;
+    private TextView btnStartDiscussion;
+    private TextView btnShareLink;
 
     private FirebaseFirestore db;
     private ListenerRegistration participantListener;
-    private ListenerRegistration discussionListener;
 
     private String sessionId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_waiting_room);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(
-                    systemBars.left,
-                    systemBars.top,
-                    systemBars.right,
-                    systemBars.bottom
-            );
-            return insets;
-        });
+        setContentView(R.layout.activity_host_waiting_room);
 
         tvSessionId = findViewById(R.id.tvSessionId);
         tvTopic = findViewById(R.id.tvTopic);
         tvParticipants = findViewById(R.id.tvParticipants);
-        tvWaitingMessage = findViewById(R.id.tvWaitingMessage);
-        btnLeave = findViewById(R.id.btnLeave);
+        btnStartDiscussion = findViewById(R.id.btnStartDiscussion);
+        btnShareLink = findViewById(R.id.btnShareLink);
 
         db = FirebaseFirestore.getInstance();
 
         sessionId = getIntent().getStringExtra("sessionId");
 
         if (sessionId == null || sessionId.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "Invalid Session ID",
-                    Toast.LENGTH_LONG
-            ).show();
-
+            Toast.makeText(this, "Invalid Session ID", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
@@ -70,9 +47,9 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
         loadDiscussionDetails();
         listenForParticipants();
-        listenForDiscussionStatus();
 
-        btnLeave.setOnClickListener(v -> finish());
+        btnStartDiscussion.setOnClickListener(v -> startDiscussion());
+        btnShareLink.setOnClickListener(v -> shareMeetingLink());
     }
 
     private void loadDiscussionDetails() {
@@ -89,6 +66,7 @@ public class WaitingRoomActivity extends AppCompatActivity {
                         if (topic != null) {
                             tvTopic.setText(topic);
                         }
+
                     }
                 });
     }
@@ -115,25 +93,48 @@ public class WaitingRoomActivity extends AppCompatActivity {
                 });
     }
 
-    private void listenForDiscussionStatus() {
+    private void startDiscussion() {
 
-        discussionListener = db.collection("discussions")
+        db.collection("discussions")
                 .document(sessionId)
-                .addSnapshotListener((snapshot, error) -> {
+                .update("status", "started")
+                .addOnSuccessListener(aVoid -> {
 
-                    if (error != null || snapshot == null || !snapshot.exists()) {
-                        return;
-                    }
+                    Toast.makeText(
+                            HostWaitingRoomActivity.this,
+                            "Discussion started!",
+                            Toast.LENGTH_SHORT
+                    ).show();
 
-                    String status = snapshot.getString("status");
+                })
+                .addOnFailureListener(e -> {
 
-                    if ("started".equals(status)) {
+                    Toast.makeText(
+                            HostWaitingRoomActivity.this,
+                            "Failed to start discussion: " + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
 
-                        tvWaitingMessage.setText(
-                                "The discussion has started!"
-                        );
-                    }
                 });
+    }
+    private void shareMeetingLink() {
+
+        String meetingLink = "https://ai-gd-analyzer.web.app/join/" + sessionId;
+
+        android.content.Intent shareIntent = new android.content.Intent();
+        shareIntent.setAction(android.content.Intent.ACTION_SEND);
+        shareIntent.putExtra(
+                android.content.Intent.EXTRA_TEXT,
+                "Join my AI Group Discussion:\n\n" + meetingLink
+        );
+        shareIntent.setType("text/plain");
+
+        startActivity(
+                android.content.Intent.createChooser(
+                        shareIntent,
+                        "Share Meeting Link"
+                )
+        );
     }
 
     @Override
@@ -142,10 +143,6 @@ public class WaitingRoomActivity extends AppCompatActivity {
 
         if (participantListener != null) {
             participantListener.remove();
-        }
-
-        if (discussionListener != null) {
-            discussionListener.remove();
         }
     }
 }
